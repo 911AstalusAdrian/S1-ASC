@@ -1,0 +1,46 @@
+     1                                  
+     2                                      ; (a+b)/2 + (10-a/c)+b/4
+     3                                  
+     4                                  bits 32
+     5                                  global start
+     6                                  extern exit
+     7                                  import exit msvcrt.dll
+     8                                  segment data use32 class = data
+     9 00000000 14                          a DB 20
+    10 00000001 64                          b DB 100
+    11 00000002 96                          c DB 150
+    12                                  segment code use32 class= code
+    13                                  start:
+    14                                      ; The result will be stored in CL
+    15                                  
+    16                                      ; (a+b)/2
+    17                                  
+    18 00000000 A0[00000000]                MOV AL, [a] ; AL = a = 20
+    19 00000005 0205[01000000]              ADD AL, [b] ; AL = AL + b = 120
+    20 0000000B B400                        MOV AH, 0   ; We put 0 in AH so that AX will have the same value as AL
+    21 0000000D B302                        MOV BL, 2   ; BL = 2
+    22 0000000F F6F3                        DIV BL      ; We divide AX by BL (which is 2)
+    23                                      ; AL = AX/BL = 60, AH = AX%BL = 0
+    24 00000011 88C1                        MOV CL, AL  ; CL = AL = 60
+    25                                      
+    26                                      ; b/4
+    27                                      
+    28 00000013 A0[01000000]                MOV AL, [b] ; AL = b = 100
+    29 00000018 B400                        MOV AH, 0   ; AH is 0 so AX will have the same value as AL (100)
+    30 0000001A B304                        MOV BL, 4   ; BL = 4
+    31 0000001C F6F3                        DIV BL      ; We divide AX by BL (which is 4)
+    32                                      ; AL = AX/BL = 25, AH = AX%BL = 0
+    33 0000001E 00C1                        ADD CL, AL  ; CL = CL + AL = 60 + 25 = 85
+    34                                      
+    35                                      ; 10-a/c
+    36                                      
+    37 00000020 A0[00000000]                MOV AL, [a] ; AL = a = 20
+    38 00000025 B400                        MOV AH, 0   ; AH = 0, then AX = 20
+    39 00000027 8A1D[02000000]              MOV BL, [c] ; BL = c = 150
+    40 0000002D F6F3                        DIV BL      ; We divide AX by BL (which is 150)
+    41                                      ; AL = AX/BL = 0, AH = AX%BL = 20
+    42 0000002F B30A                        MOV BL, 10  ; BL = 10
+    43 00000031 28C3                        SUB BL, AL  ; BL = BL - AL = 10 - 0 = 10
+    44 00000033 00D9                        ADD CL, BL  ; CL = CL + BL = 85 + 10 = 95
+    45 00000035 6A00                        push dword 0
+    46 00000037 FF15[00000000]              call [exit]

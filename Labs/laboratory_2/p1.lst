@@ -1,0 +1,22 @@
+     1                                  
+     2                                   ; 4*4
+     3                                  
+     4                                  bits 32
+     5                                  global start
+     6                                  extern exit
+     7                                  import exit msvcrt.dll
+     8                                  segment  data use32 class=data
+     9 00000000 1000000000000000            a dq 10h
+    10                                      b equ 10
+    11 00000008 0A00                        c dw 10
+    12 0000000A F6FFFFFF                    d dd -10
+    13 0000000E 02                          e db 10b
+    14 0000000F 1010                        f dw 10101010h
+    14          ******************       warning: word data exceeds bounds [-w+number-overflow]
+    15                                  segment  code use32 class=code
+    16                                  start:
+    17 00000000 B004                        mov AL, 4
+    18 00000002 B304                        mov BL, 4
+    19 00000004 F6E3                        mul BL
+    20 00000006 6A00                        push dword 0
+    21 00000008 FF15[00000000]              call [exit]

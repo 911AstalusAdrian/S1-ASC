@@ -1,0 +1,35 @@
+     1                                  
+     2                                      ; c-a-(b+a)+c
+     3                                      ; a - byte
+     4                                      ; b - word
+     5                                      ; c - dword
+     6                                  
+     7                                  bits 32
+     8                                  global start
+     9                                  extern exit
+    10                                  import exit msvcrt.dll
+    11                                  segment data use32 class = data
+    12 00000000 0A                          a DB 10
+    13 00000001 3200                        b DW 50
+    14 00000003 C8000000                    c DD 200
+    15                                  segment code use32 class= code
+    16                                  start:
+    17                                  
+    18                                      ; the final result is stored in the ECX register
+    19                                  
+    20 00000000 A0[00000000]                mov al, byte [a] ; moving the byte in the AL register
+    21 00000005 B400                        mov ah, 0; making the AH register 0, so AX can have the value of the byte a (AX <- 10)
+    22 00000007 668B1D[01000000]            mov bx, word [b] ; moving the word in the BX register (BX <- 50)
+    23 0000000E 6601C3                      add bx, ax ; adding the byte in AX to the word in BX (BX <- a+b = 60)
+    24                                     
+    25 00000011 8B0D[03000000]              mov ecx, dword [c]  ; moving the dword in the ECX register (ECX <- 200)
+    26 00000017 BA00000000                  mov edx, 0 ; EDX <- 0
+    27 0000001C 6689DA                      mov dx, bx ; DX <- BX = 60  => EDX <- 60
+    28 0000001F B800000000                  mov eax, 0 ; EAX <- 0
+    29 00000024 A0[00000000]                mov al, byte [a] ; AL <- 10  => EAX <- 10
+    30 00000029 29C1                        sub ecx, eax ; ECX <- ECX - EAX = 190
+    31 0000002B 29D1                        sub ecx, edx ; ECX <- ECX - EDX = 130
+    32 0000002D A1[03000000]                mov eax, dword [c] ; EAX <- 200
+    33 00000032 01C1                        add ecx ,eax ; ECX <- ECX + EAX = 330
+    34 00000034 6A00                        push dword 0
+    35 00000036 FF15[00000000]              call [exit]

@@ -1,0 +1,34 @@
+     1                                  bits 32
+     2                                  global start
+     3                                  extern exit, printf
+     4                                  import printf msvcrt.dll
+     5                                  import exit msvcrt.dll
+     6 00000000 256400                      format db "%d", 0
+     7                                  segment code use32 class=code
+     8                                  start:
+     9 00000003 B8F2FFFFFF                  mov eax, -14
+    10 00000008 89C3                        mov ebx, eax
+    11 0000000A D1E3                        shl ebx, 1
+    12 0000000C 722A                        jc done
+    13 0000000E D1EB                        shr ebx, 1
+    14 00000010 7326                        jnc done
+    15 00000012 D1EB                        shr ebx, 1
+    16 00000014 7311                        jnc label1
+    17                                      
+    18 00000016 50                          push eax
+    19 00000017 68[00000000]                push dword format
+    20 0000001C FF15[00000000]              call [printf]
+    21 00000022 83C408                      add esp, 4*2
+    22 00000025 EB11                        jmp done
+    23                                      
+    24                                      label1:
+    25 00000027 F7D8                        neg eax
+    26 00000029 50                          push eax
+    27 0000002A 68[00000000]                push dword format
+    28 0000002F FF15[00000000]              call [printf]
+    29 00000035 83C408                      add esp, 4*2
+    30                                      
+    31                                      done:
+    32 00000038 6A00                        push dword 0
+    33 0000003A FF15[00000000]              call [exit]
+    34                                      

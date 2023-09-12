@@ -1,0 +1,47 @@
+     1                                  
+     2                                      ;ex 06
+     3                                      ;Two natural numbers a and b (a: dword, b: dword, defined in the data segment) are given. Calculate a/b and display the quotient in the following format: "<a>/<b> = <quotient>". Example: for a = 200, b = 5 it wi
+     4                                      ;The values will be displayed in decimal format (base 10) with sign.
+     5                                      ;ex 07
+     6                                      ;Two natural numbers a and b (a: dword, b: dword, defined in the data segment) are given. Calculate a/b and display the remainder in the following format: "<a> mod <b> = <remainder>". Example: for a = 23, b = 5 
+     7                                      ;The values will be displayed in decimal format (base 10) with sign.
+     8                                  
+     9                                  bits 32 
+    10                                  global start
+    11                                  extern exit, printf
+    12                                  import printf msvcrt.dll
+    13                                  import exit msvcrt.dll
+    14                                  segment data use32 class=data
+    15 00000000 2564202F202564203D-         quotient_message db "%d / %d = %d", 13, 10, 0
+    15 00000009 2025640D0A00       
+    16 0000000F 2564206D6F64202564-         remainder_message db "%d mod %d = %d", 0
+    16 00000018 203D20256400       
+    17 0000001E F4000000                    value_a dd 244
+    18 00000022 0C000000                    value_b dd 12
+    19                                  segment code use32 class=code
+    20                                  start:
+    21 00000000 A1[1E000000]                mov eax, [value_a]
+    22 00000005 99                          cdq
+    23 00000006 8B1D[22000000]              mov ebx, [value_b]
+    24 0000000C F7FB                        idiv ebx
+    25                                      ; EAX  quotient, EDX remainder
+    26                                      
+    27 0000000E 60                          pushad
+    28                                      
+    29 0000000F 50                          push dword eax
+    30 00000010 FF35[22000000]              push dword [value_b]
+    31 00000016 FF35[1E000000]              push dword [value_a]
+    32 0000001C 68[00000000]                push dword quotient_message
+    33 00000021 FF15[00000000]              call [printf]
+    34 00000027 83C410                      add esp, 4*4
+    35                                      
+    36 0000002A 61                          popad
+    37                                      
+    38 0000002B 52                          push dword edx
+    39 0000002C FF35[22000000]              push dword [value_b]
+    40 00000032 FF35[1E000000]              push dword [value_a]
+    41 00000038 68[0F000000]                push dword remainder_message
+    42 0000003D FF15[00000000]              call [printf]
+    43 00000043 83C410                      add esp, 4*4
+    44 00000046 6A00                        push dword 0
+    45 00000048 FF15[00000000]              call [exit]

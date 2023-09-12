@@ -1,0 +1,34 @@
+     1                                  
+     2                                      ;Read a number in base 10 from the keyboard and display the value of that number in base 16 
+     3                                      ;Example: Read: 28; display: 1C
+     4                                  
+     5                                  bits 32
+     6                                  global start
+     7                                  extern exit, printf, scanf
+     8                                  import exit msvcrt.dll
+     9                                  import scanf msvcrt.dll
+    10                                  import printf msvcrt.dll
+    11                                  segment data use32 class=data
+    12 00000000 256400                      decimal_format db "%d", 0
+    13 00000003 526561643A2000              message_dec db "Read: ", 0
+    14 0000000A 446973706C61793A20-         message_hex db "Display: %x", 0
+    14 00000013 257800             
+    15 00000016 00000000                    our_value dd 0
+    16                                  segment code use32 class=code
+    17                                  start: 
+    18 00000000 68[03000000]                push dword message_dec
+    19 00000005 FF15[00000000]              call [printf]
+    20 0000000B 83C404                      add esp, 4
+    21                                      
+    22 0000000E 68[16000000]                push dword our_value
+    23 00000013 68[00000000]                push dword decimal_format
+    24 00000018 FF15[00000000]              call [scanf]
+    25 0000001E 83C408                      add esp, 4*2
+    26                                      
+    27 00000021 FF35[16000000]              push dword [our_value]
+    28 00000027 68[0A000000]                push dword message_hex
+    29 0000002C FF15[00000000]              call [printf]
+    30 00000032 83C408                      add esp, 4*2
+    31                                      
+    32 00000035 6A00                        push dword 0
+    33 00000037 FF15[00000000]              call [exit]

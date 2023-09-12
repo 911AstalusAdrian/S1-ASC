@@ -1,0 +1,58 @@
+     1                                      ;Read two numbers a and b (base 10) from the keyboard and calculate: (a+b)/(a-b). 
+     2                                      ;The quotient will be stored in a variable called "result" (defined in the data segment). 
+     3                                      ;The values are considered in signed representation.
+     4                                      
+     5                                  bits 32
+     6                                  global start
+     7                                  extern exit, scanf, printf
+     8                                  import exit msvcrt.dll
+     9                                  import printf msvcrt.dll
+    10                                  import scanf msvcrt.dll
+    11                                  segment data use32 class=data
+    12 00000000 4769766520613A200D-         message_a db "Give a: ", 13, 10, 0
+    12 00000009 0A00               
+    13 0000000B 4769766520623A200D-         message_b db "Give b: ", 13, 10 ,0
+    13 00000014 0A00               
+    14 00000016 256400                      decimal_format db "%d", 0
+    15 00000019 28612B62292F28612D-         message db "(a+b)/(a-b): %d", 0
+    15 00000022 62293A20256400     
+    16 00000029 00000000                    value_a dd 0
+    17 0000002D 00000000                    value_b dd 0
+    18                                  segment code use32 class=code
+    19                                  start:
+    20 00000000 68[00000000]                push dword message_a
+    21 00000005 FF15[00000000]              call [printf]
+    22 0000000B 83C404                      add esp, 4
+    23                                      
+    24 0000000E 68[29000000]                push dword value_a
+    25 00000013 68[16000000]                push dword decimal_format
+    26 00000018 FF15[00000000]              call [scanf]
+    27 0000001E 83C408                      add esp, 4*2
+    28                                      
+    29 00000021 68[0B000000]                push dword message_b
+    30 00000026 FF15[00000000]              call [printf]
+    31 0000002C 83C404                      add esp, 4
+    32                                      
+    33 0000002F 68[2D000000]                push dword value_b
+    34 00000034 68[16000000]                push dword decimal_format
+    35 00000039 FF15[00000000]              call [scanf]
+    36 0000003F 83C408                      add esp, 4*2
+    37                                      
+    38                                      
+    39 00000042 A1[29000000]                mov eax, [value_a]
+    40 00000047 2B05[2D000000]              sub eax, dword [value_b]
+    41 0000004D 89C1                        mov ecx, eax ; we move a-b into another register so we have EAX (which will be converted into EDX:EAX) for the division
+    42                                      
+    43 0000004F A1[29000000]                mov eax, [value_a]
+    44 00000054 0305[2D000000]              add eax, dword [value_b]
+    45 0000005A 99                          cdq ; convert dword in EAX into qword in EDX:EAX
+    46                                      
+    47 0000005B F7F9                        idiv ecx  ; a-b is in ECX so we divide EDX:EAX by ECX (EAX quotient, EDX remainder)
+    48                                      
+    49 0000005D 50                          push dword eax
+    50 0000005E 68[19000000]                push dword message
+    51 00000063 FF15[00000000]              call [printf]
+    52 00000069 83C408                      add esp, 4*2
+    53                                      
+    54 0000006C 6A00                        push dword 0
+    55 0000006E FF15[00000000]              call [exit]

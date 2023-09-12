@@ -1,0 +1,71 @@
+     1                                      
+     2                                      ; Given the words A and B, compute the doubleword C as follows:
+     3                                      ; the bits 0-7 of C have the value 1
+     4                                      ; the bits 8-11 of C are the same as the bits 4-7 of A
+     5                                      ; the bits 12-19 are the same as the bits 2-9 of B
+     6                                      ; the bits 20-23 are the same as the bits 0-3 of A
+     7                                      ; the bits 24-31 are the same as the high byte of B
+     8                                      
+     9                                  bits 32
+    10                                  global  start 
+    11                                  extern  exit
+    12                                  import  exit msvcrt.dll
+    13                                  segment  data use32 class=data
+    14 00000000 5777                         a dw 0111011101010111b
+    15 00000002 BE9B                         b dw 1001101110111110b 
+    16 00000004 <res 00000004>               c resd 1
+    17                                  segment  code use32 class=code ; code segment
+    18                                  start:
+    19                                      
+    20 00000000 BB00000000                  mov EBX, 0 ; we compute the result in EBX
+    21                                      
+    22                                      ; the bits 0-7 of C have the value 1
+    23 00000005 81CBFF000000                or EBX, 00000000000000000000000011111111b ; we force the value of bits 0-7 of the result to be 1
+    24                                      
+    25                                      ; the bits 8-11 of C are the same as bits 4-7 of A
+    26 0000000B 66A1[00000000]              mov AX, [a] ; we isolate the bits 4-7 of A
+    27 00000011 66BA0000                    mov DX, 0
+    28 00000015 6625F000                    and AX, 0000000011110000b
+    29 00000019 6652                        push DX
+    30 0000001B 6650                        push AX     ; we convert the word AX into the dword EAX
+    31 0000001D 58                          pop EAX     ; EAX will have the bits 4-7 of A
+    32 0000001E B104                        mov CL, 4
+    33 00000020 D3C0                        rol EAX, CL ; we rotate to the left, to bring the bits in the positions 8-11
+    34 00000022 09C3                        or EBX, EAX ; we copy the bits 8-11 of EAX into EBX
+    35                                      
+    36                                      ; the bits 12-19 are the same as the bits 2-9 of B
+    37 00000024 66A1[02000000]              mov AX, [b] ; we isolate the bits 2-9 of B
+    38 0000002A 66BA0000                    mov DX, 0
+    39 0000002E 6625FC03                    and AX, 0000001111111100b
+    40 00000032 6652                        push DX
+    41 00000034 6650                        push AX     ; we convert the word AX into the dword EAX
+    42 00000036 58                          pop EAX     ; EAX will have the bits 2-9 of B
+    43 00000037 B10A                        mov CL, 10
+    44 00000039 D3C0                        rol EAX, CL ; we rotate to the left, bringing the bits in the right positions
+    45 0000003B 09C3                        or EBX, EAX ; we copy the bits 12-19 of EAX into EBX
+    46                                      
+    47                                      ; the bits 20-23 are the same as bits 0-3 of A
+    48 0000003D 66A1[00000000]              mov AX, [a] ; we isolate the bits 0-3 of A
+    49 00000043 66BA0000                    mov DX, 0
+    50 00000047 6683E00F                    and AX, 0000000000001111b
+    51 0000004B 6652                        push DX
+    52 0000004D 6650                        push AX     ; we convert the word AX into the dword EAX
+    53 0000004F 58                          pop EAX     ; EAX will have the bits 0-3 of A
+    54 00000050 B114                        mov CL, 20
+    55 00000052 D3C0                        rol EAX, CL ; we rotate to the left, bringing the bits in the right positions
+    56 00000054 09C3                        or EBX, EAX ; we copy the bits 20-23 of EAX into EBX
+    57                                      
+    58                                      ;the bits 24-31 are the same as the high byte of B
+    59 00000056 66A1[02000000]              mov AX, [b]
+    60 0000005C 66BA0000                    mov DX, 0
+    61 00000060 662500FF                    and AX, 1111111100000000b ; we isolate the high byte of B
+    62 00000064 6652                        push DX
+    63 00000066 6650                        push AX     ; we convert the word AX into the dword EAX
+    64 00000068 58                          pop EAX
+    65 00000069 B110                        mov CL, 16
+    66 0000006B D3C0                        rol EAX, CL ; we rotate to the left so that the bits are in the right positions
+    67 0000006D 09C3                        or EBX, EAX ; we copy the bits 24-31 of EAX into EBX
+    68                                      
+    69 0000006F 891D[04000000]              mov dword [c], EBX ; dword c will have the value from the register EBX 
+    70 00000075 6A00                        push dword 0
+    71 00000077 FF15[00000000]              call [exit]

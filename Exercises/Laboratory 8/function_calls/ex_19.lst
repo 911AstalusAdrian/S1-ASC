@@ -1,0 +1,68 @@
+     1                                      ;Read one byte and one word from the keyboard. Print on the screen "YES" if the bits of the byte read are found consecutively among the bits of the word and "NO" otherwise. Example: a = 10 = 0000 1010b
+     2                                      ;                   b = 256 = 0000 0001 0000 0000b
+     3                                      ;                   The value printed on the screen will be NO.
+     4                                      ;a = 0Ah = 0000 1010b
+     5                                      ;b = 6151h = 0110 0001 0101 0001b
+     6                                      ;The value printed on the screen will be YES (you can find the bits on positions 5-12).
+     7                                      
+     8                                  bits 32
+     9                                  global start
+    10                                  extern exit, scanf, printf
+    11                                  import exit msvcrt.dll
+    12                                  import printf msvcrt.dll
+    13                                  import scanf msvcrt.dll
+    14                                  segment data use32 class=data
+    15 00000000 5265616420613A2000          message_a db "Read a: ", 0
+    16 00000009 5265616420623A2000          message_b db "Read b: ", 0
+    17 00000012 257800                      hex db "%x", 0
+    18 00000015 59455300                    message_yes db "YES", 0
+    19 00000019 4E4F00                      message_no db "NO", 0
+    20 0000001C 00                          value_a db 0
+    21 0000001D 0000                        value_b dw 0
+    22                                  segment code use32 class=code
+    23                                  start:
+    24 00000000 68[00000000]                push dword message_a
+    25 00000005 FF15[00000000]              call [printf]
+    26 0000000B 83C404                      add esp, 4
+    27                                     
+    28 0000000E 68[1C000000]                push dword value_a
+    29 00000013 68[12000000]                push dword hex
+    30 00000018 FF15[00000000]              call [scanf]
+    31 0000001E 83C408                      add esp, 4*2
+    32                                     
+    33 00000021 68[09000000]                push dword message_b
+    34 00000026 FF15[00000000]              call [printf]
+    35 0000002C 83C404                      add esp, 4
+    36                                     
+    37 0000002F 68[1D000000]                push dword value_b
+    38 00000034 68[12000000]                push dword hex
+    39 00000039 FF15[00000000]              call [scanf]
+    40 0000003F 83C408                      add esp, 4*2
+    41                                     
+    42 00000042 B908000000                  mov ecx, 8 ; we'll do the loop 8 times, because there are 8 ways in which we can find the bits of a in the bits of b
+    43 00000047 31C0                        xor eax, eax
+    44 00000049 66A1[1D000000]              mov ax, [value_b]
+    45                                      each_consecutive_bits:
+    46 0000004F 88C3                            mov bl, al
+    47 00000051 2A1D[1C000000]                  sub bl, [value_a] ; we subtract from the lower byte the value a
+    48                                          ; if the result is 0, it means the bytes were the same as the ones of a
+    49 00000057 80FB00                          cmp bl, 0
+    50 0000005A 7510                            jne next
+    51 0000005C 68[15000000]                    push dword message_yes
+    52 00000061 FF15[00000000]                  call [printf]
+    53 00000067 83C404                          add esp, 4
+    54 0000006A EB17                            jmp ending
+    55                                          next:
+    56 0000006C 51                              push ecx
+    57 0000006D B101                            mov cl, 1
+    58 0000006F 66D3E8                          shr ax, cl
+    59 00000072 59                              pop ecx
+    60 00000073 E2DA                        loop each_consecutive_bits
+    61                                     
+    62 00000075 68[19000000]                push dword message_no
+    63 0000007A FF15[00000000]              call [printf]
+    64 00000080 83C404                      add esp, 4
+    65                                      
+    66                                      ending:
+    67 00000083 6A00                        push dword 0
+    68 00000085 FF15[00000000]              call [exit]

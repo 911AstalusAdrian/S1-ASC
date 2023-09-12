@@ -1,0 +1,32 @@
+     1                                  
+     2                                      ;Two natural numbers a and b (a, b: dword, defined in the data segment) are given. 
+     3                                      ;Calculate their sum and display the result in the following format: "<a> + <b> = <result>". 
+     4                                      ;Example: "1 + 2 = 3"
+     5                                      ;The values will be displayed in decimal format (base 10) with sign.
+     6                                      
+     7                                  bits 32
+     8                                  global start
+     9                                  extern exit, printf, scanf
+    10                                  import exit msvcrt.dll
+    11                                  import scanf msvcrt.dll
+    12                                  import printf msvcrt.dll
+    13                                  segment data use32 class=data
+    14 00000000 2564202B202564203D-         print_message db "%d + %d = %d", 0
+    14 00000009 20256400           
+    15 0000000D 1E000000                    value_a dd 30
+    16 00000011 88FFFFFF                    value_b dd -120
+    17                                  segment code use32 class=code
+    18                                  start:
+    19 00000000 A1[0D000000]                mov eax, dword [value_a]
+    20 00000005 8B1D[11000000]              mov ebx, dword [value_b]
+    21 0000000B 01D8                        add eax, ebx
+    22                                      
+    23 0000000D 50                          push dword eax
+    24 0000000E FF35[11000000]              push dword [value_b]
+    25 00000014 FF35[0D000000]              push dword [value_a]
+    26 0000001A 68[00000000]                push dword print_message
+    27 0000001F FF15[00000000]              call [printf]
+    28 00000025 83C410                      add esp, 4*4
+    29                                      
+    30 00000028 6A00                        push dword 0
+    31 0000002A FF15[00000000]              call [exit]

@@ -1,0 +1,60 @@
+     1                                  
+     2                                      ;Read two numbers a and b (base 10) from the keyboard and calculate: (a+b)*(a-b). 
+     3                                      ;The result of multiplication will be stored in a variable called "result" (defined in the data segment).
+     4                                      
+     5                                  bits 32
+     6                                  global start
+     7                                  extern exit, scanf, printf
+     8                                  import exit msvcrt.dll
+     9                                  import printf msvcrt.dll
+    10                                  import scanf msvcrt.dll
+    11                                  segment data use32 class=data
+    12 00000000 256400                      decimal db "%d", 0
+    13 00000003 4769766520613A2000          message_a db "Give a: ", 0
+    14 0000000C 4769766520623A2000          message_b db "Give b: ", 0
+    15 00000015 28612B62292A28612D-         message_result db "(a+b)*(a-b): %d: ", 0
+    15 0000001E 62293A2025643A2000 
+    16 00000027 00000000                    value_a dd 0
+    17 0000002B 00000000                    value_b dd 0
+    18 0000002F 0000000000000000            result dq 0
+    19                                  segment code use32 class=code
+    20                                  start:
+    21 00000000 68[03000000]                push dword message_a
+    22 00000005 FF15[00000000]              call [printf]
+    23 0000000B 83C404                      add esp, 4
+    24                                      
+    25 0000000E 68[27000000]                push dword value_a
+    26 00000013 68[00000000]                push dword decimal
+    27 00000018 FF15[00000000]              call [scanf]
+    28 0000001E 83C408                      add esp, 4*2
+    29                                      
+    30 00000021 68[0C000000]                push dword message_b
+    31 00000026 FF15[00000000]              call [printf]
+    32 0000002C 83C404                      add esp, 4
+    33                                      
+    34 0000002F 68[2B000000]                push dword value_b
+    35 00000034 68[00000000]                push dword decimal
+    36 00000039 FF15[00000000]              call [scanf]
+    37 0000003F 83C408                      add esp, 4*2
+    38                                      
+    39                                      ; we compute a+b in EAX, which will be multiplied with (a-b)
+    40 00000042 A1[27000000]                mov eax, dword [value_a]
+    41 00000047 0305[2B000000]              add eax, dword [value_b]
+    42                                      
+    43                                      ; a-b is computed in EBX
+    44 0000004D 8B1D[27000000]              mov ebx, dword [value_a]
+    45 00000053 2B1D[2B000000]              sub ebx, dword [value_b]
+    46                                      
+    47 00000059 F7EB                        imul EBX; EDX:EAX <- EAX*EBX
+    48                                      
+    49                                      ; We put EDX:EAX into the qword 'result'
+    50 0000005B A3[33000000]                mov dword [result+4], eax
+    51 00000060 8915[2F000000]              mov dword [result], edx
+    52                                      
+    53 00000066 FF35[33000000]              push dword [result+4]
+    54 0000006C FF35[2F000000]              push dword [result]
+    55 00000072 68[15000000]                push dword message_result
+    56 00000077 FF15[00000000]              call [printf]
+    57 0000007D 83C40C                      add esp, 4*3
+    58 00000080 6A00                        push dword 0
+    59 00000082 FF15[00000000]              call [exit]

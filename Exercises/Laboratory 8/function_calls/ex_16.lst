@@ -1,0 +1,54 @@
+     1                                  
+     2                                      ;Read two numbers a and b (in base 10) from the keyboard. 
+     3                                      ;Calculate and print their arithmetic average in base 16
+     4                                      
+     5                                  bits 32
+     6                                  global start
+     7                                  extern exit, printf, scanf
+     8                                  import exit msvcrt.dll
+     9                                  import printf msvcrt.dll
+    10                                  import scanf msvcrt.dll
+    11                                  segment data use32 class=data
+    12 00000000 256400                      decimal db "%d", 0
+    13 00000003 4769766520613A2000          message_a db "Give a: ", 0
+    14 0000000C 4769766520623A2000          message_b db "Give b: ", 0
+    15 00000015 546865206172697468-         final_message db "The arithmetic average is: %d", 0
+    15 0000001E 6D6574696320617665-
+    15 00000027 726167652069733A20-
+    15 00000030 256400             
+    16 00000033 00000000                    value_a dd 0
+    17 00000037 00000000                    value_b dd 0
+    18                                  segment code use32 class=code
+    19                                  start:
+    20 00000000 68[03000000]                push dword message_a
+    21 00000005 FF15[00000000]              call [printf]
+    22 0000000B 83C404                      add esp, 4
+    23                                      
+    24 0000000E 68[33000000]                push dword value_a
+    25 00000013 68[00000000]                push dword decimal
+    26 00000018 FF15[00000000]              call [scanf]
+    27 0000001E 83C408                      add esp, 4*2
+    28                                      
+    29 00000021 68[0C000000]                push dword message_b
+    30 00000026 FF15[00000000]              call [printf]
+    31 0000002C 83C404                      add esp, 4
+    32                                      
+    33 0000002F 68[37000000]                push dword value_b
+    34 00000034 68[00000000]                push dword decimal
+    35 00000039 FF15[00000000]              call [scanf]
+    36 0000003F 83C408                      add esp, 4*2
+    37                                      
+    38 00000042 A1[33000000]                mov eax, [value_a]
+    39 00000047 0305[37000000]              add eax, [value_b]
+    40 0000004D 99                          cdq
+    41                                      
+    42 0000004E BB02000000                  mov ebx, 2
+    43 00000053 F7FB                        idiv ebx
+    44                                  
+    45 00000055 50                          push dword eax
+    46 00000056 68[15000000]                push dword final_message
+    47 0000005B FF15[00000000]              call [printf]
+    48 00000061 83C408                      add esp, 4*2
+    49                                      
+    50 00000064 6A00                        push dword 0
+    51 00000066 FF15[00000000]              call [exit]

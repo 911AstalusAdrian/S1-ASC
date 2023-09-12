@@ -1,0 +1,65 @@
+     1                                  
+     2                                      ; Being given two alphabetical ordered strings of characters, s1 and s2, build using merge sort the ordered string of bytes that contain all characters from s1 and s2.
+     3                                  
+     4                                  bits 32 
+     5                                  global start
+     6                                  extern exit
+     7                                  import exit msvcrt.dll
+     8                                  segment data use32 class=data
+     9 00000000 6162646669                  s1 db 'a', 'b', 'd', 'f', 'i'
+    10                                      len1 equ $-s1
+    11 00000005 63656768                    s2 db 'c', 'e', 'g', 'h'
+    12                                      len2 equ $-s2
+    13 00000009 00<rept>                    s3 times len1+len2 db 0
+    14                                      len3 equ $-s3
+    15                                  segment code use32 class=code
+    16                                      ; Our final string will be stored in EDI
+    17                                      start:
+    18 00000000 BE[00000000]                mov ESI, s1 ; we move s1 into ESI
+    19                                      ;mov EBX, s2 ; we move s2 into EBX
+    20 00000005 BF[09000000]                mov EDI, s3 ; we move s3 into EDI
+    21 0000000A B909000000                  mov ECX, len3 ; we move the length of s3 into ECX, so we can check if it is 0
+    22 0000000F E346                        jecxz Final ; if the length of s3 is 0, we don't have bytes to sort
+    23 00000011 BA00000000                  mov EDX, 0 ; we use EDX as a 'counter for s2
+    24 00000016 B900000000                  mov ECX, 0 ; we use ECX as a 'counter for S1
+    25                                      MergeSort:
+    26 0000001B 83FA04                          cmp EDX, len2 ; we compare the counter of s2 with the length of s2 
+    27                                          ; This way we see if we still have bits in s2
+    28 0000001E 7D1C                            jge MergeRemainingS1
+    29 00000020 83F905                          cmp ECX, len1 ; we compare the counter of s1 with the length of s2
+    30 00000023 7D22                            jge MergeRemainingS2
+    31 00000025 AC                              lodsb ; we move into AL the byte from <DS:ESI>
+    32 00000026 8A9A[05000000]                  mov BL, [s2+EDX] ; we move in BL the byte from s2 on the position of the value of EDX
+    33 0000002C 38D8                            cmp AL, BL
+    34 0000002E 7F05                            jg SecondByteSmaller
+    35 00000030 FC                              cld ; we clear the direction flag
+    36 00000031 AA                              stosb ; we put the byte from AL into <ES:EDI> and increment EDI
+    37 00000032 41                              inc ECX ; we increment ECX so we know how many bytes from s1 we took
+    38 00000033 EBE6                            jmp MergeSort ; after we put the byte into s3, we start the sort again
+    39                                          SecondByteSmaller:
+    40                                              ; we move the byte from BL in AL and we store it into <ES:EDI>
+    41 00000035 88D8                                mov AL, BL
+    42 00000037 AA                                  stosb
+    43 00000038 42                                  inc EDX ; we increment EDX so we can take the next byte from s2
+    44 00000039 4E                                  dec ESI ; we decrease ESI so we can take again the same byte from s1
+    45 0000003A EBDF                                jmp MergeSort ; we start the sort again
+    46                                      MergeRemainingS1:
+    47 0000003C 83F905                          cmp ECX, len1 ; we compare the counter of s1 with the length of s2
+    48 0000003F 7D16                            jge Final
+    49 00000041 FC                              cld ; we clear the direction flag
+    50 00000042 AC                              lodsb ; we move the byte from <DS:ESI> in AL
+    51 00000043 AA                              stosb ; we put the byte from AL in <ES:EDI>
+    52 00000044 41                              inc ECX
+    53 00000045 EBF5                            jmp MergeRemainingS1
+    54                                      MergeRemainingS2:
+    55 00000047 83FA04                          cmp EDX, len2 ; we compare the counter of s2 with the length of s2 
+    56                                          ; This way we see if we still have bits in s2
+    57 0000004A 7D0B                            jge Final
+    58 0000004C 8A82[05000000]                  mov AL, [s2+EDX]
+    59 00000052 FC                              cld ; we clear the direction flag
+    60 00000053 AA                              stosb ; we store the byte from AL in <ES:EDI>
+    61 00000054 42                              inc EDX
+    62 00000055 EBF0                            jmp MergeRemainingS2
+    63                                      Final:
+    64 00000057 6A00                        push dword 0
+    65 00000059 FF15[00000000]              call [exit]

@@ -1,0 +1,32 @@
+     1                                  
+     2                                      ;Two natural numbers a and b (a, b: dword, defined in the data segment) are given. 
+     3                                      ;Calculate their product and display the result in the following format: "<a> * <b> = <result>". 
+     4                                      ;Example: "2 * 4 = 8"
+     5                                      ;The values will be displayed in decimal format (base 10) with sign.
+     6                                      
+     7                                  bits 32
+     8                                  global start 
+     9                                  extern exit, printf
+    10                                  import exit msvcrt.dll
+    11                                  import printf msvcrt.dll
+    12                                  segment data use32 class=data
+    13 00000000 2564202A202564203D-         message db "%d * %d = %d", 0
+    13 00000009 20256400           
+    14 0000000D 0D000000                    value_a dd 13
+    15 00000011 F6FFFFFF                    value_b dd -10
+    16                                  segment code use32 class=code
+    17                                  start:
+    18 00000000 A1[0D000000]                mov eax, dword [value_a]
+    19 00000005 8B1D[11000000]              mov ebx, dword [value_b]
+    20 0000000B F7EB                        imul ebx
+    21                                      
+    22 0000000D 52                          push dword edx
+    23 0000000E 50                          push dword eax
+    24 0000000F FF35[11000000]              push dword [value_b]
+    25 00000015 FF35[0D000000]              push dword [value_a]
+    26 0000001B 68[00000000]                push dword message
+    27 00000020 FF15[00000000]              call [printf]
+    28 00000026 83C414                      add esp, 4*5
+    29                                      
+    30 00000029 6A00                        push dword 0
+    31 0000002B FF15[00000000]              call [exit]

@@ -1,0 +1,86 @@
+     1                                  
+     2                                      ;ex 14
+     3                                      ;Read two numbers a and b (in base 16) from the keyboard and calculate a+b. Display the result in base 10
+     4                                      
+     5                                      ;ex 15
+     6                                      ;Read two numbers a and b (in base 10) from the keyboard and calculate a+b. Display the result in base 16
+     7                                      
+     8                                  bits 32
+     9                                  global start
+    10                                  extern exit, scanf, printf
+    11                                  import exit msvcrt.dll
+    12                                  import scanf msvcrt.dll
+    13                                  import printf msvcrt.dll
+    14                                  segment data use32 class=data
+    15 00000000 256400                      decimal_format db "%d", 0
+    16 00000003 257800                      hex_format db "%x", 0
+    17 00000006 4769766520613A2000          message_a db "Give a: ", 0
+    18 0000000F 4769766520623A2000          message_b db "Give b: ", 0
+    19 00000018 612B62286261736520-         hex_sum db "a+b(base 16) = %d(base 10)", 13, 10, 0
+    19 00000021 313629203D20256428-
+    19 0000002A 62617365203130290D-
+    19 00000033 0A00               
+    20 00000035 612B62286261736520-         dec_sum db "a+b(base 10) = %x(base 16)", 13, 10, 0
+    20 0000003E 313029203D20257828-
+    20 00000047 62617365203136290D-
+    20 00000050 0A00               
+    21 00000052 00000000                    value_a dd 0
+    22 00000056 00000000                    value_b dd 0
+    23                                  segment code use32 class=code
+    24                                  start:
+    25                                  
+    26                                      ;ex 14
+    27 00000000 68[06000000]                push dword message_a
+    28 00000005 FF15[00000000]              call [printf]
+    29 0000000B 83C404                      add esp, 4
+    30                                      
+    31 0000000E 68[52000000]                push dword value_a
+    32 00000013 68[03000000]                push dword hex_format
+    33 00000018 FF15[00000000]              call [scanf]
+    34 0000001E 83C408                      add esp, 4*2
+    35                                      
+    36 00000021 68[0F000000]                push dword message_b
+    37 00000026 FF15[00000000]              call [printf]
+    38 0000002C 83C404                      add esp, 4
+    39                                      
+    40 0000002F 68[56000000]                push dword value_b
+    41 00000034 68[03000000]                push dword hex_format
+    42 00000039 FF15[00000000]              call [scanf]
+    43 0000003F 83C408                      add esp, 4*2
+    44                                      
+    45 00000042 A1[52000000]                mov eax, dword [value_a]
+    46 00000047 0305[56000000]              add eax, dword [value_b]
+    47                                      
+    48 0000004D 50                          push dword eax
+    49 0000004E 68[18000000]                push dword hex_sum
+    50 00000053 FF15[00000000]              call [printf]
+    51 00000059 83C408                      add esp, 4*2
+    52                                      
+    53                                      ;ex 15
+    54 0000005C 68[06000000]                push dword message_a
+    55 00000061 FF15[00000000]              call [printf]
+    56 00000067 83C404                      add esp, 4
+    57                                      
+    58 0000006A 68[52000000]                push dword value_a
+    59 0000006F 68[00000000]                push dword decimal_format
+    60 00000074 FF15[00000000]              call [scanf]
+    61 0000007A 83C408                      add esp, 4*2
+    62                                      
+    63 0000007D 68[0F000000]                push dword message_b
+    64 00000082 FF15[00000000]              call [printf]
+    65 00000088 83C404                      add esp, 4
+    66                                      
+    67 0000008B 68[56000000]                push dword value_b
+    68 00000090 68[00000000]                push dword decimal_format
+    69 00000095 FF15[00000000]              call [scanf]
+    70 0000009B 83C408                      add esp, 4*2
+    71                                      
+    72 0000009E A1[52000000]                mov eax, dword [value_a]
+    73 000000A3 0305[56000000]              add eax, dword [value_b]
+    74                                      
+    75 000000A9 50                          push dword eax
+    76 000000AA 68[35000000]                push dword dec_sum
+    77 000000AF FF15[00000000]              call [printf]
+    78 000000B5 83C408                      add esp, 4*2
+    79 000000B8 6A00                        push dword 0
+    80 000000BA FF15[00000000]              call [exit]

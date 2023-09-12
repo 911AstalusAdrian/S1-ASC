@@ -1,0 +1,104 @@
+     1                                  
+     2                                      ;A text file is given.
+     3                                      ;ex 01
+     4                                      ;Read the content of the file, count the number of vowels and display the result on the screen.
+     5                                      ;ex 02
+     6                                      ;A text file is given. Read the content of the file, count the number of consonants and display the result on the screen
+     7                                      ;The name of text file is defined in the data segment.
+     8                                      
+     9                                  bits 32 
+    10                                  global start
+    11                                  extern exit, printf, scanf, gets, fopen, fclose, fread
+    12                                  import fread msvcrt.dll
+    13                                  import exit msvcrt.dll
+    14                                  import printf msvcrt.dll
+    15                                  import scanf msvcrt.dll
+    16                                  import gets msvcrt.dll
+    17                                  import fopen msvcrt.dll
+    18                                  import fclose msvcrt.dll
+    19                                  segment data use32 class=data
+    20 00000000 7472792E74787400            file_name db "try.txt", 0
+    21 00000008 7200                        access_mode db 'r', 0
+    22 0000000A 546865206E756D6265-         vowels_m db "The number of vowels is: %d", 13, 10, 0
+    22 00000013 72206F6620766F7765-
+    22 0000001C 6C732069733A202564-
+    22 00000025 0D0A00             
+    23 00000028 546865206E756D6265-         consonants_m db "The number of consonants is: %d", 13, 10, 0
+    23 00000031 72206F6620636F6E73-
+    23 0000003A 6F6E616E7473206973-
+    23 00000043 3A2025640D0A00     
+    24 0000004A 00000000                    v_count dd 0
+    25 0000004E 00000000                    c_count dd 0
+    26                                      len equ 100 ; we read 100 bytes at a time
+    27 00000052 FFFFFFFF                    file_descriptor dd -1
+    28 00000056 <res 00000064>              buffer resb len
+    29                                  segment code use32 class=code
+    30                                  start:
+    31 00000000 68[08000000]                push dword access_mode
+    32 00000005 68[00000000]                push dword file_name
+    33 0000000A FF15[00000000]              call [fopen]
+    34 00000010 83C408                      add esp, 4*2
+    35                                      
+    36 00000013 83F800                      cmp eax, 0
+    37 00000016 0F8486000000                je ending
+    38 0000001C A3[52000000]                mov [file_descriptor], eax
+    39                                  
+    40                                      ; FREAD: destination string, character size, character number, file desc
+    41 00000021 FF35[52000000]              push dword [file_descriptor]
+    42 00000027 6A64                        push dword len
+    43 00000029 6A01                        push dword 1
+    44 0000002B 68[56000000]                push dword buffer
+    45 00000030 FF15[00000000]              call [fread]
+    46 00000036 83C410                      add esp, 4*4
+    47                                      
+    48 00000039 89C1                        mov ecx, eax
+    49 0000003B BE[56000000]                mov esi, buffer
+    50 00000040 FC                          cld
+    51                                      while_not_end:
+    52 00000041 AC                              lodsb ; byte in al
+    53 00000042 3C61                            cmp al, 'a'
+    54 00000044 742C                                je vowel
+    55 00000046 3C65                            cmp al, 'e'
+    56 00000048 7428                                je vowel
+    57 0000004A 3C69                            cmp al, 'i'
+    58 0000004C 7424                                je vowel
+    59 0000004E 3C6F                            cmp al, 'o'
+    60 00000050 7420                                je vowel
+    61 00000052 3C75                            cmp al, 'u'
+    62 00000054 741C                                je vowel
+    63 00000056 3C41                            cmp al, 'A'
+    64 00000058 7418                                je vowel
+    65 0000005A 3C45                            cmp al, 'E'
+    66 0000005C 7414                                je vowel
+    67 0000005E 3C49                            cmp al, 'I'
+    68 00000060 7410                                je vowel
+    69 00000062 3C4F                            cmp al, 'O'
+    70 00000064 740C                                je vowel
+    71 00000066 3C55                            cmp al, 'U'
+    72 00000068 7408                                je vowel
+    73                                              
+    74 0000006A FF05[4E000000]                  inc dword [c_count]
+    75 00000070 EB06                            jmp next_char
+    76                                          vowel:
+    77 00000072 FF05[4A000000]                  inc dword [v_count]
+    78                                          next_char:
+    79 00000078 E2C7                        loop while_not_end
+    80                                      
+    81 0000007A FF35[4A000000]              push dword [v_count]
+    82 00000080 68[0A000000]                push dword vowels_m
+    83 00000085 FF15[00000000]              call [printf]
+    84 0000008B 83C408                      add esp, 4*2
+    85                                      
+    86 0000008E FF35[4E000000]              push dword [c_count]
+    87 00000094 68[28000000]                push dword consonants_m
+    88 00000099 FF15[00000000]              call [printf]
+    89 0000009F 83C408                      add esp, 4*2
+    90                                      
+    91                                      ending:
+    92                                      
+    93 000000A2 FF35[52000000]              push dword [file_descriptor]
+    94 000000A8 FF15[00000000]              call [fclose]
+    95 000000AE 83C404                      add esp, 4
+    96                                      
+    97 000000B1 6A00                        push dword 0
+    98 000000B3 FF15[00000000]              call [exit]

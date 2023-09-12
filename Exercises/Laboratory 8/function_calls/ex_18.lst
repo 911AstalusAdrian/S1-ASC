@@ -1,0 +1,67 @@
+     1                                  
+     2                                      ;Read a decimal number and a hexadecimal number from the keyboard. 
+     3                                      ;Display the number of 1's of the sum of the two numbers in decimal format. 
+     4                                      ;Example:   a = 32 = 0010 0000b
+     5                                      ;           b = 1Ah = 0001 1010b
+     6                                      ;           32 + 1Ah = 0011 1010b
+     7                                      ;The value printed on the screen will be 4
+     8                                      
+     9                                  bits 32
+    10                                  global start
+    11                                  extern exit, printf, scanf
+    12                                  import exit msvcrt.dll
+    13                                  import printf msvcrt.dll
+    14                                  import scanf msvcrt.dll
+    15                                  segment data use32 class=data
+    16 00000000 256400                      decimal db "%d", 0
+    17 00000003 257800                      hex db "%x", 0
+    18 00000006 4769766520612C2069-         message_a db "Give a, in decimal: ", 0
+    18 0000000F 6E20646563696D616C-
+    18 00000018 3A2000             
+    19 0000001B 4769766520622C2069-         message_b db "Give b, in hexadecimal: ", 0
+    19 00000024 6E2068657861646563-
+    19 0000002D 696D616C3A2000     
+    20 00000034 00000000                    value_a dd 0
+    21 00000038 00000000                    value_b dd 0
+    22                                  segment code use32 class=code
+    23                                  start:
+    24 00000000 68[06000000]                push dword message_a
+    25 00000005 FF15[00000000]              call [printf]
+    26 0000000B 83C404                      add esp, 4
+    27                                      
+    28 0000000E 68[34000000]                push dword value_a
+    29 00000013 68[00000000]                push dword decimal
+    30 00000018 FF15[00000000]              call [scanf]
+    31 0000001E 83C408                      add esp, 4*2
+    32                                      
+    33 00000021 68[1B000000]                push dword message_b
+    34 00000026 FF15[00000000]              call [printf]
+    35 0000002C 83C404                      add esp, 4
+    36                                      
+    37 0000002F 68[38000000]                push dword value_b
+    38 00000034 68[03000000]                push dword hex
+    39 00000039 FF15[00000000]              call [scanf]
+    40 0000003F 83C408                      add esp, 4*2
+    41                                      
+    42                                      ; a+b will be in eax
+    43 00000042 A1[34000000]                mov eax, [value_a]
+    44 00000047 0305[38000000]              add eax, [value_b]
+    45                                      
+    46 0000004D 31DB                        xor ebx, ebx ; the number of 1 bits will be stored in EBX
+    47 0000004F B91F000000                  mov ecx, 31 ; a dword has 32 bits (from 0 to 31) we use ECX to create a loop
+    48                                      each_bit:
+    49 00000054 89C2                            mov edx, eax
+    50 00000056 83E201                          and edx, 1b
+    51 00000059 83FA01                          cmp edx, 1b ; we check if the last bit of eax is one
+    52 0000005C 7501                            jnz not_one
+    53 0000005E 43                              inc ebx
+    54                                          not_one:
+    55 0000005F D1E8                            shr eax, 1
+    56 00000061 E2F1                        loop each_bit
+    57                                      
+    58 00000063 53                          push dword ebx
+    59 00000064 68[00000000]                push dword decimal
+    60 00000069 FF15[00000000]              call [printf]
+    61 0000006F 83C408                      add esp, 4*2
+    62 00000072 6A00                        push dword 0
+    63 00000074 FF15[00000000]              call [exit]

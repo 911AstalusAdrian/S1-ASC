@@ -1,0 +1,34 @@
+     1                                  
+     2                                      ;Two natural numbers a and b (a, b: dword, defined in the data segment) are given. 
+     3                                      ;Calculate a/b and display the quotient and the remainder in the following format: 
+     4                                      ;"Quotient = <quotient>, remainder = <remainder>". 
+     5                                      ;Example: for a = 23, b = 10 it will display: "Quotient = 2, remainder = 3".
+     6                                      ;The values will be displayed in decimal format (base 10) with sign.
+     7                                      
+     8                                  bits 32
+     9                                  global start
+    10                                  extern exit, printf
+    11                                  import exit msvcrt.dll
+    12                                  import printf msvcrt.dll
+    13                                  segment data use32 class=data
+    14 00000000 51756F7469656E7420-         message db "Quotient = %d, remaninder = %d", 0
+    14 00000009 3D2025642C2072656D-
+    14 00000012 616E696E646572203D-
+    14 0000001B 20256400           
+    15 0000001F 87000000                    value_a dd 135
+    16 00000023 0A000000                    value_b dd 10
+    17                                  segment code use32 class=code
+    18                                  start:
+    19 00000000 A1[1F000000]                mov eax, [value_a]
+    20 00000005 99                          cdq ; EAX gets extended to EDX:EAX in the signed representation
+    21 00000006 8B1D[23000000]              mov ebx, [value_b]
+    22 0000000C F7FB                        idiv ebx ; EAX <- quotient, EDX <- remainder
+    23                                      
+    24 0000000E 52                          push dword edx
+    25 0000000F 50                          push dword eax
+    26 00000010 68[00000000]                push dword message
+    27 00000015 FF15[00000000]              call [printf]
+    28 0000001B 83C40C                      add esp, 4*3
+    29                                      
+    30 0000001E 6A00                        push dword 0
+    31 00000020 FF15[00000000]              call [exit]

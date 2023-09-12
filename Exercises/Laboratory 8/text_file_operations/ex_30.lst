@@ -1,0 +1,102 @@
+     1                                  
+     2                                      ;A file name (defined in data segment) is given. 
+     3                                      ;Create a file with the given name, then read words from the keyboard until character '$' is read from the keyboard. 
+     4                                      ;Write only the words that contain at least one digit to file.
+     5                                      
+     6                                  bits 32
+     7                                  global start
+     8                                  extern exit, scanf, printf, fopen, fclose, fprintf
+     9                                  import exit msvcrt.dll
+    10                                  import scanf msvcrt.dll
+    11                                  import printf msvcrt.dll
+    12                                  import fopen msvcrt.dll
+    13                                  import fclose msvcrt.dll
+    14                                  import fprintf msvcrt.dll
+    15                                  segment data use32 class=data
+    16 00000000 616E6F746865722E74-         file_name db "another.txt", 0
+    16 00000009 787400             
+    17 0000000C 7700                        access_mode db "w", 0
+    18 0000000E 257300                      string_type db "%s", 0
+    19 00000011 47697665206120776F-         message db "Give a word: ", 0
+    19 0000001A 72643A2000         
+    20 0000001F 2000                        space db " ", 0
+    21 00000021 FFFFFFFF                    file_descriptor dd -1
+    22 00000025 00                          has_digit db 0
+    23 00000026 <res 00000014>              our_word resd 5
+    24                                  segment code use32 class=code
+    25                                  start:
+    26                                      
+    27 00000000 68[0C000000]                push dword access_mode
+    28 00000005 68[00000000]                push dword file_name
+    29 0000000A FF15[00000000]              call [fopen]
+    30 00000010 83C408                      add esp, 4*2
+    31                                      
+    32 00000013 83F800                      cmp eax, 0
+    33 00000016 0F84A5000000                je ending
+    34 0000001C A3[21000000]                mov [file_descriptor], eax
+    35                                      
+    36                                      each_word:
+    37 00000021 68[11000000]                    push dword message
+    38 00000026 FF15[00000000]                  call [printf]
+    39 0000002C 83C404                          add esp, 4
+    40                                          
+    41 0000002F C705[26000000]0000-             mov dword [our_word], 0
+    41 00000037 0000               
+    42 00000039 68[26000000]                    push dword our_word
+    43 0000003E 68[0E000000]                    push dword string_type
+    44 00000043 FF15[00000000]                  call [scanf]
+    45 00000049 83C408                          add esp, 4*2
+    46                                          
+    47 0000004C 833D[26000000]24                cmp dword [our_word], '$'
+    48 00000053 746C                            je ending
+    49                                          
+    50 00000055 C605[25000000]00                mov byte [has_digit], 0
+    51 0000005C BE[26000000]                    mov esi, our_word
+    52                                          each_character:
+    53 00000061 AC                                  lodsb
+    54 00000062 3C00                                cmp al, 0
+    55 00000064 7456                                je end_character
+    56 00000066 3C30                                cmp al, '0'
+    57 00000068 7426                                je digit
+    58 0000006A 3C31                                cmp al, '1'
+    59 0000006C 7422                                je digit
+    60 0000006E 3C32                                cmp al, '2'
+    61 00000070 741E                                je digit
+    62 00000072 3C33                                cmp al, '3'
+    63 00000074 741A                                je digit
+    64 00000076 3C34                                cmp al, '4'
+    65 00000078 7416                                je digit
+    66 0000007A 3C35                                cmp al, '5'
+    67 0000007C 7412                                je digit
+    68 0000007E 3C36                                cmp al, '6'
+    69 00000080 740E                                je digit
+    70 00000082 3C37                                cmp al, '7'
+    71 00000084 740A                                je digit
+    72 00000086 3C38                                cmp al, '8'
+    73 00000088 7406                                je digit
+    74 0000008A 3C39                                cmp al, '9'
+    75 0000008C 7402                                je digit
+    76                                              
+    77 0000008E EB2A                                jmp no_digit
+    78                                              digit:
+    79                                                  
+    80                                                  
+    81 00000090 68[26000000]                            push dword our_word
+    82 00000095 FF35[21000000]                          push dword [file_descriptor]
+    83 0000009B FF15[00000000]                          call [fprintf]
+    84 000000A1 83C408                                  add esp, 4*2
+    85                                                  
+    86 000000A4 68[1F000000]                            push dword space
+    87 000000A9 FF35[21000000]                          push dword [file_descriptor]
+    88 000000AF FF15[00000000]                          call [fprintf]
+    89 000000B5 83C408                                  add esp, 4*2
+    90 000000B8 EB02                                    jmp end_character
+    91                                              no_digit:
+    92 000000BA EBA5                                jmp each_character
+    93                                              end_character:
+    94 000000BC E960FFFFFF                       jmp each_word
+    95                                      
+    96                                      ending:
+    97                                      
+    98 000000C1 6A00                        push dword 0
+    99 000000C3 FF15[00000000]              call [exit]

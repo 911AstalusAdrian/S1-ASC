@@ -1,0 +1,75 @@
+     1                                  
+     2                                      ;Read two doublewords a and b in base 16 from the keyboard. 
+     3                                      ;Display the sum of the low parts of the two numbers and the difference between the high parts of the two numbers in base 16 Example:
+     4                                      ;a = 00101A35h
+     5                                      ;b = 00023219h
+     6                                      ;sum = 4C4Eh
+     7                                      ;difference = Eh
+     8                                      
+     9                                  bits 32
+    10                                  global start
+    11                                  extern exit, printf, scanf
+    12                                  import exit msvcrt.dll
+    13                                  import printf msvcrt.dll
+    14                                  import scanf msvcrt.dll
+    15                                  segment data use32 class=data
+    16 00000000 4769766520613A2000          message_a db "Give a: ", 0
+    17 00000009 4769766520623A2000          message_b db "Give b: ", 0
+    18 00000012 73756D203D2025780D-         sum db "sum = %x", 13, 10, 0
+    18 0000001B 0A00               
+    19 0000001D 646966666572656E63-         diff db "difference = %x", 13, 10, 0
+    19 00000026 65203D2025780D0A00 
+    20 0000002F 257800                      hexadecimal db "%x", 0
+    21 00000032 00000000                    value_a dd 0
+    22 00000036 00000000                    value_b dd 0
+    23                                  segment code use32 class=code
+    24                                  start:
+    25 00000000 68[00000000]                push dword message_a
+    26 00000005 FF15[00000000]              call [printf]
+    27 0000000B 83C404                      add esp, 4
+    28                                      
+    29 0000000E 68[32000000]                push dword value_a
+    30 00000013 68[2F000000]                push dword hexadecimal
+    31 00000018 FF15[00000000]              call [scanf]
+    32 0000001E 83C408                      add esp, 4*2
+    33                                      
+    34 00000021 68[09000000]                push dword message_b
+    35 00000026 FF15[00000000]              call [printf]
+    36 0000002C 83C404                      add esp, 4
+    37                                      
+    38 0000002F 68[36000000]                push dword value_b
+    39 00000034 68[2F000000]                push dword hexadecimal
+    40 00000039 FF15[00000000]              call [scanf]
+    41 0000003F 83C408                      add esp, 4*2
+    42                                      
+    43 00000042 A1[32000000]                mov eax, [value_a]
+    44 00000047 8B1D[36000000]              mov ebx, [value_b]
+    45                                      
+    46 0000004D 31D2                        xor edx, edx
+    47 0000004F 6689C2                      mov dx, ax ; we put the low word of a in dx and add the lower word of b
+    48 00000052 6601DA                      add dx, bx ; our sum is stored in EDX (the sum of the two words can be more than a word)
+    49                                      
+    50 00000055 B110                        mov cl, 16 ; we rotate the values with 16 positions to get the high words in ax and bx
+    51 00000057 D3E8                        shr eax, cl
+    52 00000059 D3EB                        shr ebx, cl
+    53                                      
+    54 0000005B 31C9                        xor ecx, ecx
+    55 0000005D 6689C1                      mov cx, ax
+    56 00000060 6629D9                      sub cx, bx
+    57 00000063 51                          push ecx
+    58                                      
+    59 00000064 52                          push dword edx
+    60 00000065 68[12000000]                push dword sum
+    61 0000006A FF15[00000000]              call [printf]
+    62 00000070 83C408                      add esp, 4*2
+    63                                      
+    64 00000073 59                          pop ecx
+    65 00000074 51                          push dword ecx
+    66 00000075 68[1D000000]                push dword diff
+    67 0000007A FF15[00000000]              call [printf]
+    68 00000080 83C408                      add esp, 4*2
+    69                                      
+    70 00000083 6A00                        push dword 0
+    71 00000085 FF15[00000000]              call [exit]
+    72                                  
+    73                                  

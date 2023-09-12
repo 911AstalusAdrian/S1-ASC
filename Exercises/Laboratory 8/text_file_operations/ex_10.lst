@@ -1,0 +1,88 @@
+     1                                  
+     2                                      ;Read a file name and a text from the keyboard. 
+     3                                      ;Create a file with that name in the current folder and write the text that has been read to file. 
+     4                                      ;Observations: The file name has maximum 30 characters. The text has maximum 120 characters.
+     5                                      
+     6                                  bits 32
+     7                                  global start
+     8                                  extern exit, scanf, printf, fprintf, fopen, fclose, gets
+     9                                  import gets msvcrt.dll
+    10                                  import exit msvcrt.dll
+    11                                  import scanf msvcrt.dll
+    12                                  import printf msvcrt.dll
+    13                                  import fprintf msvcrt.dll
+    14                                  import fopen msvcrt.dll
+    15                                  import fclose msvcrt.dll
+    16                                  segment data use32 class=data
+    17 00000000 2E74787400                  extension db ".txt", 0
+    18 00000005 526561642061207465-         read_message db "Read a text: ", 0
+    18 0000000E 78743A2000         
+    19 00000013 526561642061206669-         read_file db "Read a file_name: ", 0
+    19 0000001C 6C655F6E616D653A20-
+    19 00000025 00                 
+    20 00000026 257300                      string_type db "%s", 0
+    21 00000029 7700                        access_mode db "w", 0
+    22 0000002B FFFFFFFF                    file_descriptor dd -1
+    23 0000002F <res 0000001E>              file_name resb 30
+    24 0000004D <res 00000023>              actual_file resb 35
+    25 00000070 00<rept>                    text times 120 db 0
+    26                                      
+    27                                  segment code use32 class=code
+    28                                  start:
+    29 00000000 68[05000000]                push dword read_message
+    30 00000005 FF15[00000000]              call [printf]
+    31 0000000B 83C404                      add esp, 4
+    32                                      
+    33 0000000E 68[70000000]                push dword text
+    34 00000013 FF15[00000000]              call [gets]
+    35 00000019 83C404                      add esp, 4
+    36                                          
+    37 0000001C 68[13000000]                push dword read_file
+    38 00000021 FF15[00000000]              call [printf]
+    39 00000027 83C404                      add esp, 4
+    40                                      
+    41 0000002A 68[2F000000]                push dword file_name
+    42 0000002F FF15[00000000]              call [gets]
+    43 00000035 83C404                      add esp, 4
+    44                                      
+    45 00000038 BE[2F000000]                mov esi, file_name
+    46 0000003D BF[4D000000]                mov edi, actual_file
+    47                                      add_name:
+    48 00000042 AC                              lodsb
+    49 00000043 3C00                            cmp al, 0
+    50 00000045 7403                            je exit_move
+    51 00000047 AA                              stosb
+    52 00000048 EBF8                        jmp add_name
+    53                                      exit_move:
+    54                                      
+    55 0000004A BE[00000000]                mov esi, extension
+    56 0000004F B904000000                  mov ecx, 4
+    57                                      add_ext:
+    58 00000054 AC                              lodsb
+    59 00000055 AA                              stosb
+    60 00000056 E2FC                        loop add_ext
+    61                                      
+    62 00000058 68[29000000]                push dword access_mode
+    63 0000005D 68[4D000000]                push dword actual_file
+    64 00000062 FF15[00000000]              call [fopen]
+    65 00000068 83C408                      add esp, 4*2
+    66                                      
+    67 0000006B 83F800                      cmp eax, 0
+    68 0000006E 7428                        je we_done
+    69                                      
+    70 00000070 A3[2B000000]                mov [file_descriptor], eax
+    71                                      
+    72 00000075 68[70000000]                push dword text
+    73 0000007A FF35[2B000000]              push dword [file_descriptor]
+    74 00000080 FF15[00000000]              call [fprintf]
+    75 00000086 83C408                      add esp, 4*2
+    76                                      
+    77 00000089 FF35[2B000000]              push dword [file_descriptor]
+    78 0000008F FF15[00000000]              call [fclose]
+    79 00000095 83C404                      add esp, 4
+    80                                      
+    81                                      
+    82                                      
+    83                                      we_done:
+    84 00000098 6A00                        push dword 0
+    85 0000009A FF15[00000000]              call [exit]

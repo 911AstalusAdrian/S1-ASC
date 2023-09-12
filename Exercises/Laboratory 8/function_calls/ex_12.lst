@@ -1,0 +1,33 @@
+     1                                  
+     2                                      ;A negative number a (a: dword) is given. 
+     3                                      ;Display the value of that number in base 10 and in the base 16 in the following format: 
+     4                                      ;"a = <base_10> (base 10), a = <base_16> (base 16)"
+     5                                      
+     6                                  bits 32
+     7                                  global start
+     8                                  extern exit, printf, scanf
+     9                                  import exit msvcrt.dll
+    10                                  import printf msvcrt.dll
+    11                                  import scanf msvcrt.dll
+    12                                  segment data use32 class=data
+    13 00000000 613D20256428626173-         message db "a= %d(base 10), a= %x(base 16)", 0
+    13 00000009 65203130292C20613D-
+    13 00000012 202578286261736520-
+    13 0000001B 31362900           
+    14 0000001F 256400                      dec_format db "%d", 0
+    15 00000022 00000000                    our_value dd 0
+    16                                  segment code use32 class=code
+    17                                  start:
+    18                                      
+    19 00000000 68[22000000]                push dword our_value
+    20 00000005 68[1F000000]                push dword dec_format
+    21 0000000A FF15[00000000]              call [scanf]
+    22 00000010 83C408                      add esp, 4*2 
+    23                                      
+    24 00000013 FF35[22000000]              push dword [our_value]
+    25 00000019 FF35[22000000]              push dword [our_value]
+    26 0000001F 68[00000000]                push dword message
+    27 00000024 FF15[00000000]              call [printf]
+    28 0000002A 83C40C                      add esp, 4*3
+    29 0000002D 6A00                        push dword 0
+    30 0000002F FF15[00000000]              call [exit]

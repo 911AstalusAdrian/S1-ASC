@@ -1,0 +1,74 @@
+     1                                  
+     2                                      ; Being given two alphabetical ordered strings of characters, s1 and s2, build using merge sort the ordered string of bytes that contain all characters from s1 and s2.
+     3                                  
+     4                                  bits 32 
+     5                                  global start
+     6                                  extern exit
+     7                                  import exit msvcrt.dll
+     8                                  segment data use32 class=data
+     9 00000000 6162646669                  s1 db 'a', 'b', 'd', 'f', 'i'
+    10                                      l1 equ $-s1
+    11 00000005 63656768                    s2 db 'c', 'e', 'g', 'h'
+    12                                      l2 equ $-s2
+    13 00000009 00<rept>                    s3 times l1+l2 db 0
+    14                                  segment code use32 class=code
+    15                                      start:
+    16                                      ; We 'clear' the registers EBP, EDI and ESI and initialise ECX and EDX with the lengths of our strings
+    17 00000000 B905000000                  mov ECX, l1
+    18 00000005 BA04000000                  mov EDX, l2
+    19 0000000A BF00000000                  mov EDI, 0 ; EDI is used as an index for the first string
+    20 0000000F BE00000000                  mov ESI, 0 ; ESI is used as an index for the second string
+    21 00000014 BD00000000                  mov EBP, 0 ; EBP is used as an index for the third string
+    22                                      MergeSort:
+    23                                          
+    24 00000019 8A87[00000000]                  mov AL, [s1+EDI] ; we take the byte of s1 which is on the EDI position
+    25 0000001F 8A9E[05000000]                  mov BL, [s2+ESI] ; we take the byte of s2 which is on the ESI position
+    26 00000025 38D8                            cmp AL, BL       ; we compare the two bytes, performing a fictive subtraction
+    27 00000027 7E02                            jle StringOne    ; if the byte from s1 is 'smaller', we add it to s3
+    28 00000029 7F0A                            jg StringTwo     ; if the byte from s2 is 'smaller', we add it to s3
+    29                                          ; In this case, the ASCII code of the characters is compared
+    30                                          
+    31                                          StringOne:
+    32 0000002B 8885[09000000]                      mov [s3+EBP], AL ; we add the compared byte from s1 to s3 on the EBP position
+    33 00000031 45                                  inc EBP          ; we increment EBP, so we can put the next byte on the next position in s3
+    34 00000032 47                                  inc EDI          ; we also increment EDI so we can use the next byte from s1 in the comparison
+    35 00000033 EB08                                jmp SkipS2       ; we 'skip' over 'StringTwo'
+    36                                              
+    37                                          StringTwo:
+    38 00000035 889D[09000000]                     mov [s3+EBP], BL  ; we add the compared byte from s2 to s3 on the EBP position
+    39 0000003B 45                                 inc EBP           ; we increment EBP, so we can put the next byte on the next position in s3
+    40 0000003C 46                                 inc ESI           ; we also increment EDI so we can use the next byte from s1 in the comparison
+    41                                          
+    42                                          SkipS2:
+    43                                          ; after we added either a byte from s1, or a byte from s2, we check if there are any bytes from the strings to be compared
+    44 0000003D 39CF                                cmp EDI, ECX     ; we check if there are any bytes left in s1 (if the length of our counter for s1 is smaller than the length of s1)
+    45 0000003F 741A                                je MergeRemainingS2  ; when the counter value is equal to the length of s1, it means that there are no more bytes in s1 to be compared and we add the remaining bits from s2
+    46 00000041 39D6                                cmp ESI, EDX     ; we check if there are any bytes left in s2 (if the length of our counter for s2 is smaller than the length of s2)
+    47 00000043 7402                                je MergeRemainingS1  ; when the counter value is equal to the length of s1, it means that there are no more bytes in s1 to be compared and we add the remaining bits from s2
+    48                                              ; if the condition for the first jump isn't accomplished, we go to the second comparison
+    49                                              ; if the condition for the second jump isn't accomplished either, it means that we still have bits to compare in both the strings, and we jump to the beggining
+    50 00000045 EBD2                                jmp MergeSort
+    51                                      
+    52                                      MergeRemainingS1:
+    53                                          ; we add the remaining bits from s1 to s3, because there are no more bits in s2 to be compared
+    54 00000047 8A87[00000000]                  mov AL, [s1+EDI]    ; we take the byte of s1 which is on the EDI position
+    55 0000004D 8885[09000000]                  mov [s3+EBP], AL    ; we add byte from s1 to s3 on the EBP position
+    56 00000053 47                              inc EDI             ; we increment EDI so we can use the next byte from s1 in the comparison
+    57 00000054 45                              inc EBP             ; we increment EBP, so we can put the next byte on the next position in s3
+    58 00000055 39CF                            cmp EDI, ECX        ; we check if there are any bytes left in s1 (if the length of our counter for s1 is smaller than the length of s1)
+    59 00000057 7CEE                            jl MergeRemainingS1 ; if there are still bits in s1, we jump back to the beginning of 'MergeRemainingS1'
+    60 00000059 7D12                            jge SortEnd         ; after we added all the bits from s1, we jump to the end
+    61                                      
+    62                                      MergeRemainingS2:
+    63                                          ; similar to 'MergeRemainingS2', but applied for s2
+    64 0000005B 8A9E[05000000]                  mov BL, [s2+ESI]    ; we take the byte of s2 which is on the ESI position
+    65 00000061 889D[09000000]                  mov [s3+EBP], BL    ; we add the byte from s2 to s3 on the EBP position
+    66 00000067 46                              inc ESI             ; we also increment EDI so we can use the next byte from s1 in the comparison
+    67 00000068 45                              inc EBP             ; we increment EBP, so we can put the next byte on the next position in s3
+    68 00000069 39D6                            cmp ESI, EDX        ; we check if there are any bytes left in s2 (if the length of our counter for s2 is smaller than the length of s2)
+    69 0000006B 7CEE                            jl MergeRemainingS2 ; if there are still bits in s2, we jump back to the beginning of 'MergeRemainingS2'
+    70                                      
+    71                                      SortEnd:
+    72                                      
+    73 0000006D 6A00                        push dword 0
+    74 0000006F FF15[00000000]              call [exit]

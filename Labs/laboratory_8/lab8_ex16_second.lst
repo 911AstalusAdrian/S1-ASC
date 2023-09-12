@@ -1,0 +1,98 @@
+     1                                  
+     2                                      ; A text file is given. Read the content of the file, count the number of letters 'y' and 'z' and display the values on the screen. The file name is defined in the data segment.
+     3                                      
+     4                                  bits 32
+     5                                  global start        
+     6                                  extern exit, printf, scanf, fopen, fclose, fread          
+     7                                  import exit msvcrt.dll    
+     8                                  import printf msvcrt.dll
+     9                                  import scanf msvcrt.dll 
+    10                                  import fopen msvcrt.dll
+    11                                  import fclose msvcrt.dll
+    12                                  import fread msvcrt.dll
+    13                                  segment data use32 class=data
+    14 00000000 6C61625F66696C652E-         file_name db "lab_file.txt",0  ; file name to be created
+    14 00000009 74787400           
+    15 0000000D 7200                        access_mode db "r", 0           ; file access mode r - read
+    16 0000000F FFFFFFFF                	file_descriptor dd -1           ; variable to hold the file descriptor 
+    17 00000013 00000000                    z dd 0                          ; variable used to count the number of letters 'z'
+    18 00000017 00000000                    y dd 0                          ; variable used to count the number of letters 'y'
+    19                                      len equ 100                       ; maximum nr of characters to read
+    20 0000001B 00<rept>                    text times len db 0             ; string to hold the text read from the file
+    21 0000007F 25640D0A00                  format_decimal db "%d", 13, 10, 0
+    22 00000084 546865206E756D6265-         message_y db "The number of letters 'y' is: ", 0
+    22 0000008D 72206F66206C657474-
+    22 00000096 657273202779272069-
+    22 0000009F 733A2000           
+    23 000000A3 546865206E756D6265-         message_z db "The number of letters 'z' is: ", 0
+    23 000000AC 72206F66206C657474-
+    23 000000B5 65727320277A272069-
+    23 000000BE 733A2000           
+    24                                     
+    25                                  segment code use32 class=code
+    26                                      start:
+    27 00000000 68[0D000000]                push dword access_mode          ; we push the file name and
+    28 00000005 68[00000000]                push dword file_name            ; access mode on the stack
+    29 0000000A FF15[00000000]              call [fopen]                    ; eax = fopen(file_name, access_mode)
+    30 00000010 83C408                      add esp, 4*2                    ; clean the stack
+    31 00000013 A3[0F000000]                mov [file_descriptor], eax      ; store the file descriptor returned by fopen
+    32                                      
+    33                                      ; we check if fopen() has successfully created the file
+    34 00000018 83F800                      cmp eax, 0
+    35 0000001B 0F849D000000                je final
+    36                                      
+    37 00000021 FF35[0F000000]              push dword [file_descriptor]
+    38 00000027 6A64                        push dword len
+    39 00000029 6A01                        push dword 1
+    40 0000002B 68[1B000000]                push dword text
+    41 00000030 FF15[00000000]              call [fread]
+    42 00000036 83C410                      add ESP, 4*4
+    43 00000039 83F800                      cmp eax, 0
+    44 0000003C 742D                        je cleanup
+    45                                      
+    46 0000003E 89C1                        mov ecx, eax
+    47 00000040 49                          dec ecx
+    48                                      each_character:
+    49 00000041 8A81[1B000000]                  mov al, [text+ecx]
+    50 00000047 3C7A                            cmp al, 122
+    51 00000049 740E                            je letter_z
+    52 0000004B 3C5A                            cmp al, 90
+    53 0000004D 740A                            je letter_z
+    54 0000004F 3C59                            cmp al, 89
+    55 00000051 740E                            je letter_y
+    56 00000053 3C79                            cmp al, 121
+    57 00000055 740A                            je letter_y
+    58 00000057 EB10                            jmp end_loop
+    59                                          letter_z:
+    60 00000059 FF05[13000000]                      inc dword [z]
+    61 0000005F EB08                                jmp end_loop
+    62                                          letter_y:
+    63 00000061 FF05[17000000]                      inc dword [y]
+    64 00000067 EB00                                jmp end_loop
+    65                                          end_loop:
+    66 00000069 E2D6                            loop each_character
+    67                                          
+    68                                      cleanup:
+    69 0000006B FF35[0F000000]              push dword [file_descriptor]
+    70 00000071 FF15[00000000]              call [fclose]
+    71 00000077 83C404                      add esp, 4
+    72                                      
+    73 0000007A 68[84000000]                push dword message_y
+    74 0000007F FF15[00000000]              call [printf]
+    75 00000085 83C404                      add esp, 4
+    76 00000088 A1[17000000]                mov eax, [y]
+    77 0000008D 50                          push dword eax
+    78 0000008E 68[7F000000]                push dword format_decimal
+    79 00000093 FF15[00000000]              call [printf]
+    80 00000099 83C408                      add esp, 4*2
+    81 0000009C 68[A3000000]                push dword message_z
+    82 000000A1 FF15[00000000]              call [printf]
+    83 000000A7 83C404                      add esp, 4
+    84 000000AA A1[13000000]                mov eax, [z]
+    85 000000AF 50                          push dword eax
+    86 000000B0 68[7F000000]                push dword format_decimal
+    87 000000B5 FF15[00000000]              call [printf]
+    88 000000BB 83C408                      add esp, 4*2
+    89                                      final:
+    90 000000BE 6A00                        push dword 0      ; place on stack parameter for exit
+    91 000000C0 FF15[00000000]              call [exit]       ; call exit to terminate the program
